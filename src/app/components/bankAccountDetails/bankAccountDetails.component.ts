@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, inject } from "@angular/core";
+import { Component, Input, OnChanges,signal ,SimpleChanges, inject } from "@angular/core";
 import { BankService } from "../../services/bank.service";
 import { BankAccountModel } from "../../models/bank.interface";
 import { CommonModule } from "@angular/common";
@@ -7,11 +7,13 @@ import { MatCardModule } from "@angular/material/card";
 import { MatDividerModule } from "@angular/material/divider";
 import { MatListModule } from "@angular/material/list";
 import { MatChipsModule } from "@angular/material/chips";
+import { Transaction } from "../../models/bank.interface";
 
+import { TransactionSimDirective } from "../../decorators/transactionSim.directive";
 @Component({
     selector: 'bank-account-details',
     template: `
-        <ng-container *ngIf="accountInfo; else noData">
+        <ng-container *ngIf="accountInfo; else noData" transactionSim (newTransaction)="addTransaction($event)">
 
     <mat-card [style.border]="'6px solid ' + accountInfo.cardColor">
 
@@ -48,15 +50,24 @@ import { MatChipsModule } from "@angular/material/chips";
                     <span 
                         matListItemMeta
                         [class.positive]="tx.amount > 0"
-                        [class.negative]="tx.amount < 0">
+                        [class.negative]="tx.amount < 0">fix:
                         {{ tx.amount  }} 
                     </span>
 
                     <mat-divider></mat-divider>
-                        
                 </mat-list-item>
                     }
             </mat-list>
+
+                    
+         <section class="activity-feed">
+                        <h3>Recent Activity</h3>
+                       @for (item of recentTransactions(); track $index) {
+                            <span>{{item.amount}} {{item.description}} {{item.date}}</span><br/>
+                       }
+                    </section>
+          
+ 
         </mat-card-content>
 
     </mat-card>
@@ -81,7 +92,7 @@ import { MatChipsModule } from "@angular/material/chips";
     `,
     styleUrl: './bankAccountDetails.css',
     standalone: true,
-    imports: [CommonModule, BankFormat, MatCardModule, MatDividerModule, MatListModule, MatChipsModule]
+    imports: [CommonModule, BankFormat, MatCardModule, MatDividerModule, MatListModule, MatChipsModule, TransactionSimDirective]
 })
 export class BankAccountDetails implements OnChanges {
     @Input() account: string | null = null;
@@ -95,4 +106,22 @@ export class BankAccountDetails implements OnChanges {
             this.accountInfo = this.bankService.getInfoForAccount(this.account) || null;
         }
     }
+
+        recentTransactions = signal<Transaction[]>([]);
+
+addTransaction(tx: Transaction) {
+    this.recentTransactions.update(current => [tx, ...current].slice(0, 5));
+    // update balance if selected account matches transaction description
+    if (this.accountInfo) {
+        this.updateBalance(this.accountInfo.title, tx.amount);  
+    }  
+
+}
+
+updateBalance(accountName: string, amount: number) {
+    if (this.accountInfo && this.accountInfo.title === accountName) {
+        this.accountInfo = { ...this.accountInfo, balance: this.accountInfo.balance + amount };
+    }
+}
+
 }
