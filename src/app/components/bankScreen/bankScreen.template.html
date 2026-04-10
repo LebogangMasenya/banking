@@ -1,0 +1,37 @@
+<main>
+
+    <section class="active-switch">
+        <mat-slide-toggle checked="{{ isActiveOnly() }}" (toggleChange)="toggleActiveOnly()">Show Active Accounts Only</mat-slide-toggle>
+    </section>
+
+    <section class="currency-filters">
+        <button mat-button (click)="filterCurrency('$')">USD</button>
+        <button mat-button (click)="filterCurrency('R')">ZAR</button>
+        <button mat-button (click)="filterCurrency('EUR')">EUR</button>
+        <button mat-button (click)="filterCurrency('ALL')">ALL</button>
+    </section>
+
+    <section class="cards">
+        <bank-account-list [currency]="filteredCurrency()" [showActiveOnly]="isActiveOnly()"
+            (selected)="onAccountSelected($event)"></bank-account-list>
+    </section>
+
+    <section class="details">
+        <div *ngIf="selectedAccount(); else prompt">
+            @defer (on immediate) {
+            <h2>Viewing: {{ selectedAccount() }}</h2>
+            <bank-account-details [account]="selectedAccount()">
+            </bank-account-details>
+            } @loading (minimum 2000ms) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+
+            }
+
+        </div>
+
+        <ng-template #prompt>
+            <h2>Please select an account to view details.</h2>
+        </ng-template>
+    </section>
+
+</main>
