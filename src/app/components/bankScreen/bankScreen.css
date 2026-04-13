@@ -1,0 +1,20 @@
+
+
+.dark-theme {
+    background-color: #333;
+    color: #fff;
+}
+
+.light-theme {
+    background-color: #fff;
+    color: #000;
+}
+
+.premium-theme {
+    background-color: #c0c0c0;
+    color: #000;
+}
+.gold-theme {
+    background-color: #ffd700;
+    color: #000;
+}

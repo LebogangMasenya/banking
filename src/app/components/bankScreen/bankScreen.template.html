@@ -1,5 +1,17 @@
-<main >
+<main [class]="currentTheme">
+    
+    <section class="user">
+            <h1>Welcome, {{ userInfo().user?.name}}!</h1>
 
+            <section class="net-worth">
+                <h3>Your Net Worth: {{ userInfo().netWorth | currency }}</h3>
+            </section>
+
+            <section class="account-tier">
+                <h3>Account Tier: <span [matBadge]="userInfo().user?.tier" matBadgeColor="accent">{{ userInfo().user?.tier | titlecase }}</span></h3>
+            </section>
+
+    </section>
     <section class="active-switch">
         <mat-slide-toggle checked="{{ isActiveOnly() }}" (toggleChange)="toggleActiveOnly()">Show Active Accounts Only</mat-slide-toggle>
     </section>

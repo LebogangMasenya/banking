@@ -18,4 +18,9 @@ export class BankService {
     getBankAccountNames() {
         return accountData.map(account => account.title);
     }
+
+    private bankVault(): BankAccountModel[] {
+        return accountData;
+    }
+
 }
