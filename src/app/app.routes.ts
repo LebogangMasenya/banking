@@ -1,3 +1,18 @@
 import { Routes } from '@angular/router';
-
-export const routes: Routes = [];
+import { ClientPortalComponent } from './components/clientPortal/clientPortal.component';
+import { LoanOfficeComponent } from './components/loanOffice/loanOffice.component';
+import { NotFoundComponent } from './components/not-found/not-found';
+import { BankScreen } from './components/bankScreen/bankScreen.component';
+import { WelcomePage } from './components/welcome/welcome.page';
+import { authGuard, clientChildGuard, lowBalanceGuard, featureToggleGuard } from './guard/route-guard';
+export const routes: Routes = [
+    {path: '', component: WelcomePage},
+    { path: 'client-portal', component: ClientPortalComponent, canActivate: [authGuard], canActivateChild: [clientChildGuard]} ,
+    { path: 'loan-office', component: LoanOfficeComponent, providers: [], canMatch: [featureToggleGuard]},
+    { path: 'home', component: BankScreen, canActivate: [authGuard], canDeactivate: [lowBalanceGuard], 
+        children: []},
+    {
+        path: '**',
+        component: NotFoundComponent
+    }
+];

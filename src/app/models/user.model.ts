@@ -4,4 +4,5 @@ export interface User {
     name: string;
     email: string;
     tier: 'basic' | 'premium' | 'vip';
+    role?: 'user' | 'loan-officer';
 }

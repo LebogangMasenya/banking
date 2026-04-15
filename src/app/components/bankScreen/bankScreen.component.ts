@@ -11,10 +11,11 @@ import { UserService } from "../../services/user.service";
 import { themeFactory } from "../../factories/theme.factory";
 import { THEME_TOKEN } from "../../factories/theme.factory";
 import { MatBadgeModule } from "@angular/material/badge";
+import { RouterLink } from "@angular/router";
 @Component({
     templateUrl: './bankScreen.template.html',
     styleUrl: './bankScreen.css',
-    imports: [CommonModule, BankAccountDetails, BankAccountListComponent, MatSlideToggleModule, MatProgressBarModule, TransactionSimDirective, MatBadgeModule],
+    imports: [CommonModule, BankAccountDetails, BankAccountListComponent, MatSlideToggleModule, MatProgressBarModule, TransactionSimDirective, MatBadgeModule, RouterLink],
     selector: 'bank-screen',
     providers:[
         { provide: THEME_TOKEN, useFactory: themeFactory, deps: [UserService] }

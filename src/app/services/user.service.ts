@@ -2,19 +2,25 @@ import { Injectable, inject } from "@angular/core";
 import { User } from "../models/user.model";
 import { BankAccountModel } from "../models/bank.interface";
 import { BankService } from "./bank.service";
+import { CharactersService } from "./characters.service";
+import { map } from "rxjs/operators";
 @Injectable({providedIn: 'root'})
 export class UserService {
     private currentUser: User | null = null;
     bankService = inject(BankService);
+    charactersService = inject(CharactersService);
+
+    useMapped$ = this.charactersService.getCharacterById(1).pipe(
+        map((character: any) => ({
+            id: character.url.split('/').filter((part: string) => part).pop(), // Extract ID from URL
+            name: character.name,
+            email: `${character.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
+            tier: 'premium' as const
+        }))
+    );
 
     constructor() { 
-        // For demo purposes, we set a default user. In a real app, this would come from an auth service.
-        this.setCurrentUser({
-            id: 1,
-            name: 'That Guy',
-            email: 'that.guy@example.com',
-            tier: 'premium'
-        });
+       this.useMapped$.subscribe(user => this.setCurrentUser(user));
     }
 
     setCurrentUser(user: User) {
@@ -28,6 +34,6 @@ export class UserService {
     }
 
     getCurrentUser(): User | null {
-        return this.currentUser;
+        return this .currentUser;
     }
 }
