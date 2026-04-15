@@ -6,9 +6,10 @@ import { BankScreen } from './components/bankScreen/bankScreen.component';
 import { WelcomePage } from './components/welcome/welcome.page';
 import { authGuard, clientChildGuard, lowBalanceGuard, featureToggleGuard } from './guard/route-guard';
 export const routes: Routes = [
-    {path: '', component: WelcomePage},
+    {path: '', redirectTo: 'welcome', pathMatch: 'full'},
+    {path: 'welcome', component: WelcomePage},
     { path: 'client-portal', component: ClientPortalComponent, canActivate: [authGuard], canActivateChild: [clientChildGuard]} ,
-    { path: 'loan-office', component: LoanOfficeComponent, providers: [], canMatch: [featureToggleGuard]},
+    { path: 'loan-office', component: LoanOfficeComponent, canMatch: [featureToggleGuard]},
     { path: 'home', component: BankScreen, canActivate: [authGuard], canDeactivate: [lowBalanceGuard], 
         children: []},
     {

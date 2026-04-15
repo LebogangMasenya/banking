@@ -1,16 +1,11 @@
-
-
-
+<div class="app-container">
+  <nav>
+    <a routerLink="/client-portal" routerLinkActive="active-link">Client Portal</a>
+    <a routerLink="/loan-office" routerLinkActive="active-link">Loan Dashboard</a>
+  </nav>
 
 <main class="main">
-
-      <nav>
-        <a routerLink="/client-portal" routerLinkActive="active-link">Client Portal</a>
-        <a routerLink="/loan-office" routerLinkActive="active-link">Loan Dashboard</a>
-    </nav>
-  <bank-screen />
-
+  <router-outlet />
 </main>
+</div>
 
-
-<router-outlet />

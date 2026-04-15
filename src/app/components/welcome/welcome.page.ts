@@ -9,7 +9,7 @@ import { Component } from "@angular/core";
             <p>Navigate through the galaxy of banking at your fingertips!</p>
         </div>
     `,
-    style: `
+    styles: `
         .welcome-container {
             text-align: center;
             padding: 50px;
