@@ -1,12 +1,14 @@
 import { Component, inject } from "@angular/core";
-import { RouterModule } from "@angular/router";
+import { RouterModule, Router } from "@angular/router";
 import { UserService } from "../../services/user.service";
 import { CharactersService } from "../../services/characters.service";
 import { LoanService } from "../../services/loan.service";
+import { AuthService } from "../../services/auth.service";
+import { CommonModule } from "@angular/common";
 @Component({
     selector: 'client-portal',
     standalone: true,
-    imports: [RouterModule],
+    imports: [RouterModule, CommonModule],
     template: `
         <div>
             <div>
@@ -60,13 +62,15 @@ export class ClientPortalComponent {
     userService = inject(UserService);
     charactersService = inject(CharactersService);
     loanService = inject(LoanService);
-
+    authService = inject(AuthService);
+    router = inject(Router);
     currentUser = this.userService.getCurrentUser();
 
     availableVehicleLoans$ = this.loanService.getVehicleLoanOptions();
     availableStarshipLoans$ = this.loanService.getStarshipLoanOptions();
 
     switchToLoanOfficerView() {
-
+        this.authService.login('loanOfficer');
+        this.router.navigate(['/loan-office']);
     }
 }

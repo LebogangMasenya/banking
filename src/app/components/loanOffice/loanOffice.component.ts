@@ -2,7 +2,8 @@ import { Component, inject } from "@angular/core";
 import { CharactersService } from "../../services/characters.service";
 import { LoanService } from "../../services/loan.service";
 import { UserService } from "../../services/user.service";
-import { RouterLink } from "@angular/router";
+import { RouterLink, Router } from "@angular/router";
+import { AuthService } from "../../services/auth.service";
 @Component({
     selector: 'loan-office',
     template: `
@@ -64,6 +65,8 @@ export class LoanOfficeComponent {
     private charactersService = inject(CharactersService);
     private loanService = inject(LoanService);
 
+    private authService = inject(AuthService);
+    private router = inject(Router);
     characters$ = this.charactersService.getAllCharacters();
 
     userService = inject(UserService);
@@ -82,5 +85,7 @@ export class LoanOfficeComponent {
     })
 
     switchToClientView() {
-        }   
+        this.authService.login('client');
+        this.router.navigate(['/client-portal']);
+    }   
 }

@@ -1,8 +1,13 @@
 <div class="app-container">
-  <nav>
-    <a routerLink="/client-portal" routerLinkActive="active-link">Client Portal</a>
-    <a routerLink="/loan-office" routerLinkActive="active-link">Loan Dashboard</a>
-  </nav>
+ <nav *ngIf="authService.getAuthStatus()">
+  <span>Logged in as: {{ authService.getUserRole() }}</span>
+  <button (click)="logout()">Logout</button>
+  <hr>
+  <a routerLink="/client-portal" routerLinkActive="active">Portal</a>
+  <a routerLink="/loan-office" routerLinkActive="active">Office</a>
+</nav>
+
+<router-outlet />
 
 <main class="main">
   <router-outlet />

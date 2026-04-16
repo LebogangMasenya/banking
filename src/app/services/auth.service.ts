@@ -14,4 +14,15 @@ export class AuthService {
     getUserRole() {
         return this.userRole;
     }
+
+    // mock login function
+    login(role: 'client' | 'loanOfficer') {
+        this.isAuthenticated = true;
+        this.userRole = role;
+    }
+
+    logout() {
+        this.isAuthenticated = false;
+        this.userRole = null;
+    }
 }

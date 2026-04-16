@@ -1,4 +1,6 @@
-import { Component } from "@angular/core";
+import { Component, inject } from "@angular/core";
+import { AuthService } from "../../services/auth.service";
+import { Router } from "@angular/router";
 @Component({
     selector: 'welcome-screen',
     template: `
@@ -7,6 +9,11 @@ import { Component } from "@angular/core";
             <p>Your trusted partner in interstellar finance.</p>
             <p>Explore our services, manage your accounts, and apply for loans with ease.</p>
             <p>Navigate through the galaxy of banking at your fingertips!</p>
+
+            <section class="auth-ctas">
+                <button (click)="loginAs('client')">Login as Client</button>
+                <button (click)="loginAs('loanOfficer')">Login as Loan Officer</button>
+            </section>
         </div>
     `,
     styles: `
@@ -29,6 +36,11 @@ import { Component } from "@angular/core";
     `
 })
 export class WelcomePage {
-    
-
+    private authService = inject(AuthService);
+    router = inject(Router);
+    loginAs(role: 'client' | 'loanOfficer') {
+        this.authService.login(role);
+        const targetRoute = role === 'client' ? '/client-portal' : '/loan-office';
+        this.router.navigate([targetRoute]);
+    }
 } 
