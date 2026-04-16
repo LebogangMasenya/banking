@@ -8,27 +8,31 @@ export class LoanService {
     constructor(private http: HttpClient) { }
 
     getVehicleLoanOptions() {
-        return this.http.get(`https://swapi.info/api/vehicles/`).pipe(
-            map((response: any) => response.results.map((vehicle: any) => ({
-                name: vehicle.name,
-                model: vehicle.model,
-                manufacturer: vehicle.manufacturer,
-                loanAmount: parseFloat(vehicle.cost_in_credits) / 1000 // Simplified logic for loan amount
-            })))
-        );
-    }
+    return this.http.get<any[]>(`https://swapi.info/api/vehicles`).pipe(
+        map((response) => response.map((vehicle: any) => ({
+            name: vehicle.name,
+            model: vehicle.model,
+            manufacturer: vehicle.manufacturer,
+            // Guard against "unknown" values in the API
+            loanAmount: isNaN(parseFloat(vehicle.cost_in_credits)) 
+                ? 0 
+                : parseFloat(vehicle.cost_in_credits) / 1000
+        })))
+    );
+}
 
-    getStarshipLoanOptions() {
-        return this.http.get(`https://swapi.info/api/starships/`).pipe(
-            map((response: any) => response.results.map((starship: any) => ({
-                name: starship.name,
-                model: starship.model,
-                manufacturer: starship.manufacturer,
-                loanAmount: parseFloat(starship.cost_in_credits) / 1000 // Simplified logic for loan amount
-            })))
-        );
-    }
-
+getStarshipLoanOptions() {
+    return this.http.get<any[]>(`https://swapi.info/api/starships`).pipe(
+        map((response) => response.map((starship: any) => ({
+            name: starship.name,
+            model: starship.model,
+            manufacturer: starship.manufacturer,
+            loanAmount: isNaN(parseFloat(starship.cost_in_credits)) 
+                ? 0 
+                : parseFloat(starship.cost_in_credits) / 1000
+        })))
+    );
+}
     // working hours
     isWithinWorkingHours() {
         const now = new Date();

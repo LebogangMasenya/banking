@@ -4,6 +4,8 @@ import { LoanService } from "../../services/loan.service";
 import { UserService } from "../../services/user.service";
 import { RouterLink, Router } from "@angular/router";
 import { AuthService } from "../../services/auth.service";
+import { CommonModule } from "@angular/common";
+import { toSignal } from "@angular/core/rxjs-interop";
 @Component({
     selector: 'loan-office',
     template: `
@@ -20,32 +22,37 @@ import { AuthService } from "../../services/auth.service";
             <section>
                 <h2>Current loans</h2>
                 <ul>
-                    <li *ngFor="let character of characters$ | async">
-                        {{ character.name }}
-                    </li>
+                    @for (character of characters(); track character.name) {
+                        <li>
+                            {{ character.name }}
+                        </li>
+                    }
                 </ul>
             </section>
 
             <section>
                 <h2>Available Vehicle Loans</h2>
                 <ul>
-                    <li *ngFor="let loan of vehicleLoans | async">
-                        {{ loan.name }} - {{ loan.interestRate }}% interest
-                        <button>
-                            Approve
+                    @for (loan of vehicleLoans(); track loan.name) {
+                    <li>
+                            {{ loan.name }} - {{ loan.loanAmount }}% interest
+                            <button>
+                                Approve
                         </button>
                         <button>
                             Reject
                         </button>
                     </li>
+                    }
                 </ul>
             </section>
 
             <section>
                 <h2>Available Starship Loans</h2>
                 <ul>
-                    <li *ngFor="let loan of starshipLoans | async">
-                        {{ loan.name }} - {{ loan.interestRate }}% interest
+                    @for (loan of starshipLoans(); track loan.name) {
+                        <li>
+                        {{ loan.name }} - {{ loan.loanAmount }}% interest
                         <button>
                             Approve
                         </button>
@@ -53,12 +60,13 @@ import { AuthService } from "../../services/auth.service";
                             Reject
                         </button>
                     </li>
+                    }
                 </ul>
             </section>
         </div> 
     `,
     styles: ``,
-    imports: [RouterLink],
+    imports: [RouterLink, CommonModule],
     standalone: true
 })
 export class LoanOfficeComponent {
@@ -69,20 +77,16 @@ export class LoanOfficeComponent {
     private router = inject(Router);
     characters$ = this.charactersService.getAllCharacters();
 
+    characters = toSignal(this.characters$, { initialValue: [] });
+    
     userService = inject(UserService);
     currentUser = this.userService.getCurrentUser();
     availableVehicleLoans$ = this.loanService.getVehicleLoanOptions();
     availableStarshipLoans$ = this.loanService.getStarshipLoanOptions();
 
 
-    starshipLoans = this.availableStarshipLoans$.subscribe(loanOptions => {
-       return loanOptions;
-    });
-
-    vehicleLoans = this.availableVehicleLoans$.subscribe(loanOptions => {
-     this.vehicleLoans = loanOptions;
-     return loanOptions;
-    })
+    starshipLoans = toSignal(this.availableStarshipLoans$, { initialValue: [] });
+    vehicleLoans = toSignal(this.availableVehicleLoans$, { initialValue: [] });
 
     switchToClientView() {
         this.authService.login('client');

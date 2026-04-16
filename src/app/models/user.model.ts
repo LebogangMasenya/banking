@@ -6,3 +6,11 @@ export interface User {
     tier: 'basic' | 'premium' | 'vip';
     role?: 'user' | 'loan-officer';
 }
+
+export interface Character {
+  name: string;
+  url: string;
+  vehicles: any[];
+  starships: any[];
+  id: string;
+}

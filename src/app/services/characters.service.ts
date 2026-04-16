@@ -1,6 +1,8 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { CharacterAssets } from "../models/loan.interface";
+import { Character } from "../models/user.model";
+import { Observable } from "rxjs";
 // the magic of rxJs
 import { map, forkJoin, switchMap, of } from "rxjs";
 @Injectable({
@@ -13,37 +15,35 @@ export class CharactersService {
         return this.http.get(`https://swapi.info/api/people/${id}`);
     }
 
-    getAllCharacters() {
-    return this.http.get<any>(`https://swapi.info/api/people/`).pipe(
-        switchMap((response: any) => {
-            const characters = response.results;
-            
-            const characterObservables = characters.map((character: any) => {
-                const vehicleUrls = character.vehicles || [];
-                const starshipUrls = character.starships || [];
-                
-                // Handle empty arrays properly
-                const vehiclesObservable = vehicleUrls.length 
-                    ? forkJoin(vehicleUrls.map((url: string) => this.http.get<any>(url)))
-                    : of([] as any[]); // Return empty array observable
-                
-                const starshipsObservable = starshipUrls.length 
-                    ? forkJoin(starshipUrls.map((url: string) => this.http.get<any>(url)))
-                    : of([] as any[]); // Return empty array observable
-                
-                // Now forkJoin with consistent observable types
-                return forkJoin({
-                    character: of(character),
-                    vehicles: vehiclesObservable,
-                    starships: starshipsObservable
-                }).pipe(
-                    
-                );
-            });
-            
-            return forkJoin(characterObservables);
-        })
-    );
+getAllCharacters(): Observable<Character[]> {
+  return this.http.get<any[]>(`https://swapi.info/api/people/`).pipe(
+    switchMap((characters) => {
+      // If no characters, return empty array immediately
+      if (!characters.length) return of([]);
+
+      // Map each character to an observable that resolves its full data
+      const detailObservables = characters.map(character => this.hydrateCharacter(character));
+      
+      return forkJoin(detailObservables);
+    })
+  );
+}
+
+private hydrateCharacter(character: any): Observable<Character> {
+  const vehicleRequests = (character.vehicles || []).map((url: string) => this.http.get(url));
+  const starshipRequests = (character.starships || []).map((url: string) => this.http.get(url));
+
+  return forkJoin({
+    vehicles: vehicleRequests.length ? forkJoin(vehicleRequests) : of([]),
+    starships: starshipRequests.length ? forkJoin(starshipRequests) : of([])
+  }).pipe(
+    map(({ vehicles, starships }) => ({
+      ...character,
+      id: character.url.split('/').filter(Boolean).pop(), // Extract ID
+      vehicles,
+      starships
+    }))
+  );
 }
 
 private calculateCollateralValue(vehicles: any[], starships: any[]): number {
