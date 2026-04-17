@@ -33,7 +33,7 @@ getStarshipLoanOptions() {
         })))
     );
 }
-    // working hours
+
     isWithinWorkingHours() {
         const now = new Date();
         const day = now.getDay(); // 0 (Sunday) to 6 (Saturday)

@@ -19,7 +19,7 @@ import { toSignal } from "@angular/core/rxjs-interop";
     <header class="dashboard-header">
         <h1>Client Portal</h1>
         <div class="actions">
-            <a routerLink="loan-office">
+            <a routerLink="/loan-office">
                 <button class="btn-secondary" (click)="switchToLoanOfficerView()">Loan Officer View</button>
             </a>
         </div>

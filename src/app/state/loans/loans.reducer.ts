@@ -1,10 +1,10 @@
 import { createReducer, on } from "@ngrx/store";
 import { LoanState } from "../../models/loan.interface";
 import { LoansActions } from "./loans.actions";
-import { initialLoanState } from "../state";
+import { initialLoanState , initialCharacterState} from "../state";
 
 export const loansReducer = createReducer(
-    initialLoanState,
+    initialCharacterState,// initialLoanState,
     on(LoansActions.approveVehicleLoan, (state, { characterName, vehicleName }) => ({
         ...state,
         loans: state.loans.map(loan => {

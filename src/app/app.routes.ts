@@ -8,7 +8,7 @@ import { authGuard, clientChildGuard, lowBalanceGuard, featureToggleGuard } from
 export const routes: Routes = [
     {path: '', redirectTo: 'welcome', pathMatch: 'full'},
     {path: 'welcome', component: WelcomePage},
-    { path: 'client-portal', component: ClientPortalComponent, canActivate: [authGuard], canActivateChild: [clientChildGuard]} ,
+    { path: 'client-portal', component: ClientPortalComponent},
     { path: 'loan-office', component: LoanOfficeComponent, canMatch: [featureToggleGuard]},
     { path: 'home', component: BankScreen, canActivate: [authGuard], canDeactivate: [lowBalanceGuard], 
         children: []},

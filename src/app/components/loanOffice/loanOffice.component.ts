@@ -10,6 +10,7 @@ import { Store } from "@ngrx/store";
 import { Observable } from "rxjs";
 import { LoansActions } from "../../state/loans/loans.actions";
 import { selectAllLoans, selectApprovedLoans, selectPendingLoans, selectRejectedLoans, selectVehicleLoans, selectStarshipLoans, selectLoansState } from "../../state/loans/loans.selectors"
+import { selectAllCharacterLoans } from "../../state/characters/characters.selectors";
 @Component({
     selector: 'loan-office',
     template: `
@@ -18,7 +19,7 @@ import { selectAllLoans, selectApprovedLoans, selectPendingLoans, selectRejected
         <h1>Loan Office</h1>
         <div class="actions">
             <span>Switch to</span>
-            <a routerLink="client-portal">
+            <a routerLink="/client-portal">
                 <button class="btn-secondary" (click)="switchToClientView()">Client View</button>
             </a>
         </div>
@@ -74,6 +75,25 @@ import { selectAllLoans, selectApprovedLoans, selectPendingLoans, selectRejected
                         </div>
                     </li>
                 }
+            </ul>
+        </section>
+
+        <section class="card">
+            <h2>Loan Applications</h2>
+            <ul>    
+                @for (loan of characterLoans(); track loan.id) {
+                    <li class="loan-item">
+                        <div class="loan-info">
+                            <strong>{{ loan.characterName }} - {{ loan.loanType === 'vehicle' ? loan.vehicleName : loan.starshipName }}</strong>
+                            <span class="interest">{{ loan.amount }} credits</span>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn-success" (click)="approveLoan(loan.characterName, loan.loanType === 'vehicle' ? loan.vehicleName : loan.starshipName)">Approve</button>
+                            <button class="btn-danger" (click)="rejectLoan(loan.characterName, loan.loanType === 'vehicle' ? loan.vehicleName : loan.starshipName)">Reject</button>
+                        </div>
+                    </li>   
+                }
+
             </ul>
         </section>
     </div>
@@ -177,6 +197,9 @@ export class LoanOfficeComponent {
     starshipLoans$ = this.store.select(selectStarshipLoans);
     loansState$ = this.store.select(selectLoansState);
 
+    allCharacterLoans$ = this.store.selectSignal(selectAllCharacterLoans);
+    allCharacterLoans = computed(() => this.allCharacterLoans$());
+
     characters$ = this.charactersService.getAllCharacters();
 
     characters = toSignal(this.characters$, { initialValue: [] });
@@ -189,6 +212,9 @@ export class LoanOfficeComponent {
     availableVehicleLoans$ = this.loanService.getVehicleLoanOptions();
     availableStarshipLoans$ = this.loanService.getStarshipLoanOptions();
 
+    characterLoans = computed(() => {
+        return this.allCharacterLoans().filter(loan => loan.status === 'pending');
+    });
 
     starshipLoans = toSignal(this.availableStarshipLoans$, { initialValue: [] });
     vehicleLoans = toSignal(this.availableVehicleLoans$, { initialValue: [] });
