@@ -4,27 +4,32 @@ import { BankAccountModel } from "../models/bank.interface";
 import { BankService } from "./bank.service";
 import { CharactersService } from "./characters.service";
 import { map } from "rxjs/operators";
-@Injectable({providedIn: 'root'})
+import { BehaviorSubject } from "rxjs";
+@Injectable({ providedIn: 'root' })
 export class UserService {
     private currentUser: User | null = null;
     bankService = inject(BankService);
     charactersService = inject(CharactersService);
 
-    useMapped$ = this.charactersService.getCharacterById(1).pipe(
-        map((character: any) => ({
-            id: character.url.split('/').filter((part: string) => part).pop(), // Extract ID from URL
-            name: character.name,
-            email: `${character.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
-            tier: 'premium' as const
-        }))
-    );
+    private currentUserSubject = new BehaviorSubject<User | null>(null);
 
-    constructor() { 
-       this.useMapped$.subscribe(user => this.setCurrentUser(user));
+    // 2. Expose as an Observable
+    currentUser$ = this.currentUserSubject.asObservable();
+    constructor() {
+        // Fetch the data and push it into the stream
+        this.charactersService.getCharacterById(1).pipe(
+            map((character: any) => ({
+                id: character.url.split('/').filter(Boolean).pop(),
+                name: character.name,
+                email: `${character.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
+                tier: 'premium' as const
+            }))
+        ).subscribe(user => this.currentUserSubject.next(user));
     }
 
     setCurrentUser(user: User) {
         this.currentUser = user;
+        this.currentUserSubject.next(user);
     }
     getNetWorth(user: User): number {
         // Implementation for calculating net worth
@@ -35,5 +40,9 @@ export class UserService {
 
     getCurrentUser(): User | null {
         return this.currentUser;
+    }
+
+    getCurrentUserVaue(): User | null {
+        return this.currentUserSubject.value;
     }
 }

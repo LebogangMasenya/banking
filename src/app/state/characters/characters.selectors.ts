@@ -1,7 +1,8 @@
-import { createSelector } from "@ngrx/store";
-import { selectAllLoans } from "../loans/loans.selectors";
-
-export const selectCharacterLoans = (characterName: string) => createSelector(selectAllLoans, (loans) => loans.filter(loan => loan.characterName === characterName));
+import { createSelector, createFeatureSelector } from "@ngrx/store";
+import { LoanState } from "../../models/loan.interface";
+export const selectCharacterLoansState = createFeatureSelector<LoanState>('characterloansstore');
+export const selectAllCharacterLoans = createSelector(selectCharacterLoansState, (state: LoanState) => state.loans || []);
+export const selectCharacterLoans = (characterName: string) => createSelector(selectAllCharacterLoans, (characterLoansState) => characterLoansState.filter(loan => loan.characterName === characterName));
 export const selectCharacterVehicleLoans = (characterName: string) => createSelector(selectCharacterLoans(characterName), (loans) => loans.filter(loan => loan.loanType === 'vehicle'));
 export const selectCharacterStarshipLoans = (characterName: string) => createSelector(selectCharacterLoans(characterName), (loans) => loans.filter(loan => loan.loanType === 'starship'));
 

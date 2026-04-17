@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, computed } from "@angular/core";
 import { RouterModule, Router } from "@angular/router";
 import { UserService } from "../../services/user.service";
 import { CharactersService } from "../../services/characters.service";
@@ -9,6 +9,7 @@ import { Observable } from "rxjs";
 import { selectCharacterLoans, selectCharacterApprovedLoans, selectCharacterPendingLoans, selectCharacterRejectedLoans, selectCharacterStarshipLoans, selectCharacterVehicleLoans } from "../../state/characters/characters.selectors";
 import { applyForStarshipLoan, applyForVehicleLoan } from "../../state/characters/characters.actions";
 import { Store } from "@ngrx/store";
+import { toSignal } from "@angular/core/rxjs-interop";
 @Component({
     selector: 'client-portal',
     standalone: true,
@@ -27,9 +28,14 @@ import { Store } from "@ngrx/store";
     <hr class="divider" />
 
     <section class="card welcome-banner">
-        <h2>Welcome, {{ currentUser?.name }}</h2>
-        <p>Your current net worth: <strong>{{ userService.getNetWorth(currentUser!) }}</strong></p>
-        <a routerLink="home/{{ currentUser?.id }}" class="btn-link">View Account Details</a>
+        <div *ngIf="currentUser$ | async as user">
+            <h1>Client Portal</h1>
+            <section>
+                <h2>Welcome, {{ user.name }}</h2>
+                <p>Your current net worth is: {{ userService.getNetWorth(user) }}</p>
+                <a routerLink="home/{{ user.id }}" class="btn-link">View Account Details</a>
+            </section>
+        </div>       
     </section>
 
     <div class="loan-grid">
@@ -66,9 +72,9 @@ import { Store } from "@ngrx/store";
 
     <section class="card">
         <h2>Your Loan Applications</h2>
-        @if (characterLoans$ | async; as loans) {
+        @if (characterLoans().length !== 0) {
             <ul class="loan-list">
-                @for (loan of loans; track loan.id) {
+                @for (loan of characterLoans(); track loan.id) {
                     <li class="loan-item">
                         <div>
                             <strong>{{ loan.loanType | titlecase }} Loan</strong> - {{ loan.loanType === 'vehicle' ? loan.vehicleName : loan.starshipName }}
@@ -78,6 +84,9 @@ import { Store } from "@ngrx/store";
                     </li>
                 }
             </ul>
+        }
+        @else {
+            <p>You have not applied for any loans yet. Explore our loan options above and apply today!</p>
         }
     </section>
 </div>
@@ -151,22 +160,39 @@ export class ClientPortalComponent {
     loanService = inject(LoanService);
     authService = inject(AuthService);
     router = inject(Router);
-    currentUser = this.userService.getCurrentUser();
-
+    currentUser$ = this.userService.currentUser$;
+    currentUser = toSignal(this.userService.currentUser$, { initialValue: null });
+    currentUserValue = computed(() => this.currentUser() || null);
     private store = inject(Store);
-    characterLoans$: Observable<any[]> = this.store.select(selectCharacterLoans(this.currentUser?.name || ''));
+    characterLoans = computed(() => {
+        const user = this.currentUser();
+        if (!user) return [];
+        return this.store.selectSignal(selectCharacterLoans(user.name))();
+    });    
+    
     availableVehicleLoans$ = this.loanService.getVehicleLoanOptions();
     availableStarshipLoans$ = this.loanService.getStarshipLoanOptions();
 
 
     applyForVehicleLoan(vehicleName: string, amount: number) {
-        console.log(`Applying for vehicle loan: ${vehicleName} with amount ${amount} for character ${this.currentUser?.name}`);
-        this.store.dispatch(applyForVehicleLoan({ characterName: this.currentUser?.name || '', vehicleName, amount }));
+
+        const user = this.currentUserValue();
+        if (!user) {
+            console.error('No user logged in');
+            return;
+        }
+        console.log(`Applying for vehicle loan: ${vehicleName} with amount ${amount} for character ${user.name}`);
+        this.store.dispatch(applyForVehicleLoan({ characterName: user.name, vehicleName, amount }));
     }
 
     applyForStarshipLoan(starshipName: string, amount: number) {
-        console.log(`Applying for starship loan: ${starshipName} with amount ${amount} for character ${this.currentUser?.name}`);
-        this.store.dispatch(applyForStarshipLoan({ characterName: this.currentUser?.name || '', starshipName, amount }));
+        const user = this.currentUserValue();
+        if (!user) {
+            console.error('No user logged in');
+            return;
+        }
+        console.log(`Applying for starship loan: ${starshipName} with amount ${amount} for character ${user.name}`);
+        this.store.dispatch(applyForStarshipLoan({ characterName: user.name, starshipName, amount }));
     }
 
     switchToLoanOfficerView() {

@@ -12,7 +12,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideStore({
       loanstore: loansReducer,
-      characterLoans: characterLoansReducer
+      characterloansstore: characterLoansReducer
     }),
   ],
 };

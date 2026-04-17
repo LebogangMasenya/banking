@@ -2,12 +2,11 @@ import { Action, createReducer, on } from "@ngrx/store";
 import { LoanState, StarshipLoan, VehicleLoan } from "../../models/loan.interface";
 import { applyForStarshipLoan, applyForVehicleLoan, updateLoanStatus } from './characters.actions'
 
-import { initialLoanState } from "../state";
-
+import { initialCharacterState } from "../state";
 export const characterLoansReducer = createReducer(
-    initialLoanState,
+    initialCharacterState,
     on(applyForStarshipLoan, (state, { characterName, starshipName, amount }) => ({
-        ...initialLoanState,
+        ...initialCharacterState,
         loans: [...state.loans, {
             id: crypto.randomUUID(),
             characterName,
@@ -19,7 +18,7 @@ export const characterLoansReducer = createReducer(
         } as StarshipLoan]
     })),
     on(applyForVehicleLoan, (state, { characterName, vehicleName, amount }) => ({
-        ...initialLoanState,
+        ...initialCharacterState,
         loans: [...state.loans, {
             id: crypto.randomUUID(),
             characterName,
@@ -31,7 +30,7 @@ export const characterLoansReducer = createReducer(
         } as VehicleLoan]
     })),
     on(updateLoanStatus, (state, {loanId, status }) => ({
-        ...initialLoanState,
+        ...initialCharacterState,
         loans: state.loans.map((loan) => {
             if (loan.id === loanId) {
                 return { ...loan, status };
