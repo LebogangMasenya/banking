@@ -1,6 +1,6 @@
 import { Action, createReducer, on } from "@ngrx/store";
 import { LoanState, StarshipLoan, VehicleLoan } from "../../models/loan.interface";
-import { applyForStarshipLoan, applyForVehicleLoan } from './characters.actions'
+import { applyForStarshipLoan, applyForVehicleLoan, updateLoanStatus } from './characters.actions'
 
 export const initialLoanState: LoanState = {
     loans: [],
@@ -34,5 +34,15 @@ export const characterLoansReducer = createReducer(
             requestDate: new Date(),
             loanType: 'vehicle',
         } as VehicleLoan]
+    })),
+    on(updateLoanStatus, (state, {loanId, status }) => ({
+        ...initialLoanState,
+        loans: state.loans.map((loan) => {
+            if (loan.id === loanId) {
+                loan.status = status;
+            }
+
+            return loan;
+        })
     }))
 )
