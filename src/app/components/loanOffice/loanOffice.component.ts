@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, computed } from "@angular/core";
 import { CharactersService } from "../../services/characters.service";
 import { LoanService } from "../../services/loan.service";
 import { UserService } from "../../services/user.service";
@@ -28,7 +28,7 @@ import { selectAllLoans, selectApprovedLoans, selectPendingLoans, selectRejected
 
     <section class="user-profile">
         <span class="label">Loan Officer:</span>
-        <span class="value">{{ currentUser?.name }}</span>
+        <span class="value">{{ currentUserValue()?.name }}</span>
     </section>
 
     <div class="loan-grid">
@@ -182,7 +182,10 @@ export class LoanOfficeComponent {
     characters = toSignal(this.characters$, { initialValue: [] });
 
     userService = inject(UserService);
-    currentUser = this.userService.getCurrentUser();
+    currentUser$ = this.userService.currentUser$;
+    currentUser = toSignal(this.userService.currentUser$, { initialValue: null });
+    currentUserValue = computed(() => this.currentUser() || null);
+    
     availableVehicleLoans$ = this.loanService.getVehicleLoanOptions();
     availableStarshipLoans$ = this.loanService.getStarshipLoanOptions();
 

@@ -1,30 +1,35 @@
 import { Injectable, inject } from "@angular/core";
 import { User } from "../models/user.model";
-import { BankAccountModel } from "../models/bank.interface";
 import { BankService } from "./bank.service";
 import { CharactersService } from "./characters.service";
 import { map } from "rxjs/operators";
-import { BehaviorSubject } from "rxjs";
+import { BehaviorSubject, switchMap } from "rxjs";
+import { AuthService } from "./auth.service";
 @Injectable({ providedIn: 'root' })
 export class UserService {
     private currentUser: User | null = null;
     bankService = inject(BankService);
+    authService = inject(AuthService);
     charactersService = inject(CharactersService);
-
+    private userRole = this.authService.getUserRole();
     private currentUserSubject = new BehaviorSubject<User | null>(null);
 
-    // 2. Expose as an Observable
     currentUser$ = this.currentUserSubject.asObservable();
     constructor() {
-        // Fetch the data and push it into the stream
-        this.charactersService.getCharacterById(1).pipe(
+        this.authService.userRole$.pipe(
+            switchMap(role => {
+                const id = role.userRole === 'loanOfficer' ? 8 : 1;
+                return this.charactersService.getCharacterById(id);
+            }),
             map((character: any) => ({
                 id: character.url.split('/').filter(Boolean).pop(),
                 name: character.name,
                 email: `${character.name.toLowerCase().replace(/\s/g, '.')}@example.com`,
                 tier: 'premium' as const
             }))
-        ).subscribe(user => this.currentUserSubject.next(user));
+        ).subscribe(user => {
+            this.currentUserSubject.next(user);
+        });
     }
 
     setCurrentUser(user: User) {
