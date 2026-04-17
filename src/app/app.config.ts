@@ -5,6 +5,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideStore } from '@ngrx/store';
 import { loansReducer } from './state/loans/loans.reducer';
 import { characterLoansReducer } from './state/characters/characters.reducer';
+import { localStorageSyncMetaReducer } from './state/state-sync.metareducer';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -13,6 +14,10 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       loanstore: loansReducer,
       characterloansstore: characterLoansReducer
-    }),
+    },
+    {
+      metaReducers: [localStorageSyncMetaReducer]
+    }
+),
   ],
 };
