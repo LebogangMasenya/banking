@@ -1,18 +1,10 @@
-import { createSelector, createFeatureSelector } from "@ngrx/store";
-import { LoanState } from "../../models/loan.interface";
-
-export const selectLoansState =  createFeatureSelector<LoanState>('loanstore');
-
-export const selectAllLoans = createSelector(selectLoansState, (state: LoanState) => state.loans);
+import { createSelector } from "@ngrx/store";
+import { selectAllLoans } from "../loans/loans.selectors";
 
 export const selectCharacterLoans = (characterName: string) => createSelector(selectAllLoans, (loans) => loans.filter(loan => loan.characterName === characterName));
+export const selectCharacterVehicleLoans = (characterName: string) => createSelector(selectCharacterLoans(characterName), (loans) => loans.filter(loan => loan.loanType === 'vehicle'));
+export const selectCharacterStarshipLoans = (characterName: string) => createSelector(selectCharacterLoans(characterName), (loans) => loans.filter(loan => loan.loanType === 'starship'));
 
-export const selectStarshipLoans = createSelector(selectAllLoans, (loans) => loans.filter(loan => loan.loanType === 'starship'));
-
-export const selectVehicleLoans = createSelector(selectAllLoans, (loans) => loans.filter(loan => loan.loanType === 'vehicle'));
-
-export const selectPendingLoans = createSelector(selectAllLoans, (loans) => loans.filter(loan => loan.status === 'pending'));
-
-export const selectApprovedLoans = createSelector(selectAllLoans, (loans) => loans.filter(loan => loan.status === 'approved'));
-
-export const selectRejectedLoans = createSelector(selectAllLoans, (loans) => loans.filter(loan => loan.status === 'rejected'));
+export const selectCharacterPendingLoans = (characterName: string) => createSelector(selectCharacterLoans(characterName), (loans) => loans.filter(loan => loan.status === 'pending'));
+export const selectCharacterApprovedLoans = (characterName: string) => createSelector(selectCharacterLoans(characterName), (loans) => loans.filter(loan => loan.status === 'approved'));
+export const selectCharacterRejectedLoans = (characterName: string) => createSelector(selectCharacterLoans(characterName), (loans) => loans.filter(loan => loan.status === 'rejected'));

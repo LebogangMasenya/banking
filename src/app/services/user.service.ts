@@ -34,6 +34,6 @@ export class UserService {
     }
 
     getCurrentUser(): User | null {
-        return this .currentUser;
+        return this.currentUser;
     }
 }

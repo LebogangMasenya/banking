@@ -6,6 +6,10 @@ import { RouterLink, Router } from "@angular/router";
 import { AuthService } from "../../services/auth.service";
 import { CommonModule } from "@angular/common";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { Store } from "@ngrx/store";
+import { Observable } from "rxjs";
+import {LoansActions} from "../../state/loans/loans.actions";
+import {selectAllLoans, selectApprovedLoans, selectPendingLoans, selectRejectedLoans, selectVehicleLoans, selectStarshipLoans, selectLoansState} from "../../state/loans/loans.selectors"
 @Component({
     selector: 'loan-office',
     template: `
@@ -20,7 +24,7 @@ import { toSignal } from "@angular/core/rxjs-interop";
                 {{ currentUser?.name }}
             </section>  
             <section>
-                <h2>Current loans</h2>
+                <h2>Current characters</h2>
                 <ul>
                     @for (character of characters(); track character.name) {
                         <li>
@@ -75,6 +79,16 @@ export class LoanOfficeComponent {
 
     private authService = inject(AuthService);
     private router = inject(Router);
+    private store = inject(Store);
+
+    currentLoans$ = this.store.select(selectAllLoans);
+    approvedLoans$ = this.store.select(selectApprovedLoans);
+    pendingLoans$ = this.store.select(selectPendingLoans);
+    rejectedLoans$ = this.store.select(selectRejectedLoans);
+    vehicleLoans$ = this.store.select(selectVehicleLoans);
+    starshipLoans$ = this.store.select(selectStarshipLoans);
+    loansState$ = this.store.select(selectLoansState);
+
     characters$ = this.charactersService.getAllCharacters();
 
     characters = toSignal(this.characters$, { initialValue: [] });
@@ -87,6 +101,14 @@ export class LoanOfficeComponent {
 
     starshipLoans = toSignal(this.availableStarshipLoans$, { initialValue: [] });
     vehicleLoans = toSignal(this.availableVehicleLoans$, { initialValue: [] });
+
+    approveLoan(characterName: string, vehicleName: string) {
+        this.store.dispatch(LoansActions.approveVehicleLoan({ characterName: characterName, vehicleName: vehicleName }));
+    }
+
+    rejectLoan(characterName: string, vehicleName: string) {
+        this.store.dispatch(LoansActions.rejectVehicleLoan({ characterName: characterName, vehicleName: vehicleName }));
+    }
 
     switchToClientView() {
         this.authService.login('client');

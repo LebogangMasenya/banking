@@ -5,6 +5,10 @@ import { CharactersService } from "../../services/characters.service";
 import { LoanService } from "../../services/loan.service";
 import { AuthService } from "../../services/auth.service";
 import { CommonModule } from "@angular/common";
+import { Observable } from "rxjs";
+import {selectCharacterLoans, selectCharacterApprovedLoans, selectCharacterPendingLoans, selectCharacterRejectedLoans, selectCharacterStarshipLoans, selectCharacterVehicleLoans} from "../../state/characters/characters.selectors";
+import {applyForStarshipLoan, applyForVehicleLoan} from "../../state/characters/characters.actions";
+import { Store } from "@ngrx/store";
 @Component({
     selector: 'client-portal',
     standalone: true,
@@ -28,7 +32,7 @@ import { CommonModule } from "@angular/common";
                         {{ loan.name }} - {{ loan.loanAmount}} credits
 
                         <div class="CTA">
-                            <button>Apply Now</button>
+                            <button (click)="applyForVehicleLoan(loan.name, loan.loanAmount)">Apply Now</button>
                         </div>
                     </li>
                 </ul>
@@ -41,7 +45,7 @@ import { CommonModule } from "@angular/common";
                         {{ loan.name }} - {{ loan.loanAmount}} credits
 
                         <div class="CTA">
-                            <button>Apply Now</button>
+                            <button (click)="applyForStarshipLoan(loan.name, loan.loanAmount)">Apply Now</button>
                         </div>
                     </li>
                 </ul>
@@ -52,6 +56,17 @@ import { CommonModule } from "@angular/common";
             <a routerLink="home/{{ currentUser?.id }}">View Account Details</a>
         </div>
     
+
+        <section>
+            <h2>Your Loan Applications</h2>
+            <div *ngIf="characterLoans$ | async as loans; ">
+                <ul>
+                    <li *ngFor="let loan of loans">
+                        {{ loan.loanType | titlecase }} Loan for {{ loan.loanType === 'vehicle' ? loan.vehicleName : loan.starshipName }} - Amount: {{ loan.amount }} credits - Status: {{ loan.status | titlecase }}
+                    </li>
+                </ul>
+            </div>
+        </section>
         </div>
 
        
@@ -66,8 +81,21 @@ export class ClientPortalComponent {
     router = inject(Router);
     currentUser = this.userService.getCurrentUser();
 
+    private store = inject(Store);
+    characterLoans$: Observable<any[]> = this.store.select(selectCharacterLoans(this.currentUser?.name || ''));
     availableVehicleLoans$ = this.loanService.getVehicleLoanOptions();
     availableStarshipLoans$ = this.loanService.getStarshipLoanOptions();
+
+
+    applyForVehicleLoan(vehicleName: string, amount: number) {
+        console.log(`Applying for vehicle loan: ${vehicleName} with amount ${amount} for character ${this.currentUser?.name}`);
+        this.store.dispatch(applyForVehicleLoan({ characterName: this.currentUser?.name || '', vehicleName, amount }));
+    }
+
+    applyForStarshipLoan(starshipName: string, amount: number) {
+        console.log(`Applying for starship loan: ${starshipName} with amount ${amount} for character ${this.currentUser?.name}`);
+        this.store.dispatch(applyForStarshipLoan({ characterName: this.currentUser?.name || '', starshipName, amount }));
+    }
 
     switchToLoanOfficerView() {
         this.authService.login('loanOfficer');
