@@ -220,10 +220,13 @@ export class LoanOfficeComponent {
     vehicleLoans = toSignal(this.availableVehicleLoans$, { initialValue: [] });
 
     approveLoan(characterName: string, vehicleName: string) {
+        console.log('Approving loan for', characterName, ' - ', vehicleName);
         this.store.dispatch(LoansActions.approveVehicleLoan({ characterName: characterName, vehicleName: vehicleName }));
     }
 
     rejectLoan(characterName: string, vehicleName: string) {
+        console.log('Rejecting loan for', characterName, ' - ', vehicleName);
+
         this.store.dispatch(LoansActions.rejectVehicleLoan({ characterName: characterName, vehicleName: vehicleName }));
     }
 
