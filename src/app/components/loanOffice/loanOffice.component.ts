@@ -224,13 +224,13 @@ export class LoanOfficeComponent {
 
     approveLoan(characterName: string, vehicleName: string) {
         console.log('Approving loan for', characterName, ' - ', vehicleName);
-        this.store.dispatch(LoansActions.approveVehicleLoan({ characterName: characterName, vehicleName: vehicleName }));
+        this.characterStore.approveVehicleLoan({characterName, vehicleName})
     }
 
     rejectLoan(characterName: string, vehicleName: string) {
         console.log('Rejecting loan for', characterName, ' - ', vehicleName);
 
-        this.store.dispatch(LoansActions.rejectVehicleLoan({ characterName: characterName, vehicleName: vehicleName }));
+        this.characterStore.rejectVehicleLoan({characterName, vehicleName})
     }
 
     switchToClientView() {

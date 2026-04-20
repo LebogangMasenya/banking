@@ -1,7 +1,7 @@
-import { getState, patchState, signalStore, watchState, withComputed, withHooks, withMethods, withProps, withState } from '@ngrx/signals'
+import { getState, patchState, signalStore, watchState, withComputed, withHooks, withMethods, withProps, withState, withLinkedState } from '@ngrx/signals'
 import { initialCharacterState } from '../state'
 import { StarshipLoan, VehicleLoan } from '../../models/loan.interface'
-import { computed, effect } from '@angular/core'
+import { computed, effect, linkedSignal } from '@angular/core'
 import { CharactersService } from '../../services/characters.service'
 import { LoanService } from '../../services/loan.service'
 import { inject } from '@angular/core'
@@ -20,7 +20,18 @@ interface vehicleProps {
 export const CharacterStore = signalStore(
     { providedIn: 'root' },
     withState(initialCharacterState),
-    withMethods((store) => ({
+    withProps(() => ({
+        charactersService: inject(CharactersService),
+        loansService: inject(LoanService)
+    })),
+        withLinkedState((store) => ({
+  currentPage: linkedSignal({ // but why not in docs, needed because its reactive and writeabelm normal computed and signal would not work
+        source: store.loans,
+        computation: () => 1
+    })
+    })),
+
+    withMethods(({loansService, ...store}) => ({
         applyForStarshipLoan({ characterName, starshipName, amount }: starshipPros): void {
 
             patchState(store, (state) => ({
@@ -60,7 +71,10 @@ export const CharacterStore = signalStore(
             }))
         },
         characterLoanCount(characterName: string) {
-            return store.loans().filter(name => name.characterName === characterName).length
+            return computed(() => store.loans().filter(loan => loan.characterName === characterName).length);
+        },
+        characterLoans(characterName: string) {
+            return computed(() => store.loans().filter(loan => loan.characterName === characterName));
         },
         approveVehicleLoan({ characterName, vehicleName }: vehicleProps) {
             patchState(store, (state) => ({
@@ -95,15 +109,39 @@ export const CharacterStore = signalStore(
                 return false;
             });
         },
-        getAllCharacters() {
-            
-        }
+        getAvailableVehiclesLoans() {
+            return loansService.getVehicleLoanOptions();
+        },
+        getAvailableStarshipLoans() {
+            return loansService.getStarshipLoanOptions();
+        },
+        fetchAllLoans() {
+            return store.loans();
+        },
+        loansByStatus: (status: string) => computed(() => store.loans().filter(loan => loan.status === status)),
 
+        selectVehicleLoans() {
+            return store.loans().filter(loan => loan.loanType === 'vehicle')
+        },
+         selectStarshipLoans() {
+            return store.loans().filter(loan => loan.loanType === 'starship')
+        },
+        goToPage(page: number) {
+            patchState(store, {currentPage: page})
+        },
+        nextPage() {
+            patchState(store, {currentPage: store.currentPage() + 1})
+        }
 
 
     })),
     withComputed((store) => ({
-        loansCount: computed(() => store.loans.length),
+        loansCount: computed(() => store.loans().length),
+        pagedLoans: computed(() => {
+            const pageSize = 10;
+           const start = (store.currentPage() - 1) * pageSize;
+            return store.loans().slice(start, start + pageSize);
+        })
     })),
     withHooks({
         onInit(store) {
@@ -117,9 +155,6 @@ export const CharacterStore = signalStore(
                 localStorage.setItem("app_state", JSON.stringify(state.loans))
             })
         }
-    }),
-    withProps(() => ({
-        charactersService: inject(CharactersService),
-        loansService: inject(LoanService)
-    }))
+    })
+
 );

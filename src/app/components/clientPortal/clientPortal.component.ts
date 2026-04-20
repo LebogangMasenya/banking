@@ -179,8 +179,6 @@ import { CharacterStore } from "../../state/signal-store/character-store";
 })
 export class ClientPortalComponent {
     userService = inject(UserService);
-    charactersService = inject(CharactersService);
-    loanService = inject(LoanService);
     authService = inject(AuthService);
     router = inject(Router);
 
@@ -188,15 +186,14 @@ export class ClientPortalComponent {
     currentUser$ = this.userService.currentUser$;
     currentUser = toSignal(this.userService.currentUser$, { initialValue: null });
     currentUserValue = computed(() => this.currentUser() || null);
-    private store = inject(Store);
     characterLoans = computed(() => {
-        const user = this.currentUser();
+        const user = this.currentUserValue();
         if (!user) return [];
-        return this.store.selectSignal(selectCharacterLoans(user.name))();
-    });    
+        return this.characaterStore.characterLoans(user.name)();
+    });
     
-    availableVehicleLoans$ = this.loanService.getVehicleLoanOptions();
-    availableStarshipLoans$ = this.loanService.getStarshipLoanOptions();
+    availableVehicleLoans$ = this.characaterStore.getAvailableVehiclesLoans();
+    availableStarshipLoans$ = this.characaterStore.getAvailableStarshipLoans();
 
 
     applyForVehicleLoan(vehicleName: string, amount: number) {
