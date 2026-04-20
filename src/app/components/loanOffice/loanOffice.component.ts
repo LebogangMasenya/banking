@@ -11,8 +11,10 @@ import { Observable } from "rxjs";
 import { LoansActions } from "../../state/loans/loans.actions";
 import { selectAllLoans, selectApprovedLoans, selectPendingLoans, selectRejectedLoans, selectVehicleLoans, selectStarshipLoans, selectLoansState } from "../../state/loans/loans.selectors"
 import { selectAllCharacterLoans } from "../../state/characters/characters.selectors";
+import { CharacterStore } from "../../state/signal-store/character-store";
 @Component({
     selector: 'loan-office',
+    providers: [CharacterStore],
     template: `
    <div class="dashboard-container">
     <header class="dashboard-header">
@@ -189,6 +191,7 @@ export class LoanOfficeComponent {
     private router = inject(Router);
     private store = inject(Store);
 
+    readonly characterStore =  inject(CharacterStore);
     currentLoans$ = this.store.select(selectAllLoans);
     approvedLoans$ = this.store.select(selectApprovedLoans);
     pendingLoans$ = this.store.select(selectPendingLoans);

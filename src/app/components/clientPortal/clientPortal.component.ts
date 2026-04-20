@@ -10,10 +10,12 @@ import { selectCharacterLoans, selectCharacterApprovedLoans, selectCharacterPend
 import { applyForStarshipLoan, applyForVehicleLoan } from "../../state/characters/characters.actions";
 import { Store } from "@ngrx/store";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { CharacterStore } from "../../state/signal-store/character-store";
 @Component({
     selector: 'client-portal',
     standalone: true,
     imports: [RouterModule, CommonModule],
+    providers: [CharacterStore],
     template: `
 <div class="dashboard-container">
     <header class="dashboard-header">
@@ -75,6 +77,27 @@ import { toSignal } from "@angular/core/rxjs-interop";
         @if (characterLoans().length !== 0) {
             <ul class="loan-list">
                 @for (loan of characterLoans(); track loan.id) {
+                    <li class="loan-item">
+                        <div>
+                            <strong>{{ loan.loanType | titlecase }} Loan</strong> - {{ loan.loanType === 'vehicle' ? loan.vehicleName : loan.starshipName }}
+                            <div class="meta">Amount: {{ loan.amount }} credits</div>
+                        </div>
+                        <span class="status-badge" [class]="loan.status.toLowerCase()">{{ loan.status | titlecase }}</span>
+                    </li>
+                }
+            </ul>
+        }
+        @else {
+            <p>You have not applied for any loans yet. Explore our loan options above and apply today!</p>
+        }
+    </section>
+
+        <section class="card">
+        <h2>Your Loan Applications 2</h2>
+        <span>Total loans {{characaterStore.characterLoanCount(currentUserValue()!.name)}}</span>
+        @if (characaterStore.loans().length !== 0) {
+            <ul class="loan-list">
+                @for (loan of characaterStore.loans(); track loan.id) {
                     <li class="loan-item">
                         <div>
                             <strong>{{ loan.loanType | titlecase }} Loan</strong> - {{ loan.loanType === 'vehicle' ? loan.vehicleName : loan.starshipName }}
@@ -160,6 +183,8 @@ export class ClientPortalComponent {
     loanService = inject(LoanService);
     authService = inject(AuthService);
     router = inject(Router);
+
+    readonly characaterStore = inject(CharacterStore)
     currentUser$ = this.userService.currentUser$;
     currentUser = toSignal(this.userService.currentUser$, { initialValue: null });
     currentUserValue = computed(() => this.currentUser() || null);
@@ -182,17 +207,21 @@ export class ClientPortalComponent {
             return;
         }
         console.log(`Applying for vehicle loan: ${vehicleName} with amount ${amount} for character ${user.name}`);
-        this.store.dispatch(applyForVehicleLoan({ characterName: user.name, vehicleName, amount }));
+        this.characaterStore.applyForVehicleLoan({ characterName: user.name, vehicleName, amount });
     }
 
     applyForStarshipLoan(starshipName: string, amount: number) {
         const user = this.currentUserValue();
+        if (this.characaterStore.doesLoanExist(user!.name, 'starship', starshipName)) {
+            console.error('Loan for this starship already exists');
+            return;
+        }
         if (!user) {
             console.error('No user logged in');
             return;
         }
         console.log(`Applying for starship loan: ${starshipName} with amount ${amount} for character ${user.name}`);
-        this.store.dispatch(applyForStarshipLoan({ characterName: user.name, starshipName, amount }));
+        this.characaterStore.applyForStarshipLoan({ characterName: user.name, starshipName, amount })
     }
 
     switchToLoanOfficerView() {
